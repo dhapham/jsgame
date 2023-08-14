@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Assignment 3 Game</title>
+  </head>
+
+  <body>
+
+    <!-- Include canvas -->
+    <canvas id="canvas" width="1500px" height="600px"> </canvas>
+
+    <!-- Add an overlay for the winning message -->
+    <div id="winOverlay" style="display: none">
+      <div id="winMessage">You Win!</div>
+    </div>
+
+    <!-- Include CSS -->
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+      #canvas {
+        background-image: url(./img/background.png);
+        background-color: rgb(188, 188, 188);
+        background-size: 1500px 600px;
+        /* width: 1500px;
+        height: 600px; */
+        border: 3px solid red;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      /* Add styles for the overlay */
+      #winOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1503px;
+        height: 603px;
+        background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Add styles for the winning message */
+      #winMessage {
+        font-family: "Press Start 2P", cursive;
+        font-size: 100px;
+        margin-top: 250px;
+        margin-left: 380px;
+        color: white;
+        text-shadow: 2px 2px 4px black;
+        font-weight: bold;
+      }
+    </style>
+
+    <!-- Include JavaScript -->
+    <script>
+      // Create class blueprint for Player and Platform
+      const standimage = new Image();
+      standimage.src = "img/stand.png";
+
+      const walkimage = new Image();
+      walkimage.src = "img/walk.png";
+
+      //  Create class for Player
+      class Player {
+        constructor() {
+          this.position = {
+            x: 10,
+            y: 10,
+            standimage: new Image(),
+            standleftimage: new Image(),
+            walkimage: new Image(),
+            jumpimage: new Image(),
+            walkleftimage: new Image(),
+            jumpleftimage: new Image(),
+          };
+          this.velocity = {
+            x: 0,
+            y: 0,
+          };
+          this.width = 80;
+          this.height = 150;
+
+          this.position.standimage.src = "img/stand.png";
+          this.position.standleftimage.src = "img/stand-left.png";
+          this.position.walkimage.src = "img/walk.png";
+          this.position.walkleftimage.src = "img/walk-left.png";
+          this.frames = 0;
+          this.currentSprite = this.position.standimage;
+
+          // Add properties for different crop widths
+          this.cropWidthStand = 193;
+          this.cropWidthWalk = 220;
+          this.cropHeight = 346;
+          // Add a property to control animation speed
+          this.animationSpeed = 10;
+          this.frameCounter = 0;
+        }
+
+        //Draw Player
+
+        draw() {
+          let cropWidth;
+          let cropHeight;
+
+          if (
+            this.currentSprite === this.position.standimage ||
+            this.currentSprite === this.position.standleftimage
+          ) {
+            //standsing sprite
+            cropWidth = this.cropWidthStand;
+            cropHeight = this.cropHeight;
+            this.width = 80;
+          } else if (
+            this.currentSprite === this.position.walkimage ||
+            this.currentSprite === this.position.walkleftimage
+          ) {
+            //Walking sprite (left or right)
+            cropWidth = this.cropWidthWalk;
+            cropHeight = this.cropHeight;
+            this.width = 95;
+          }
+
+          // Draw the current sprite frame on the canvas
+          c.drawImage(
+            this.currentSprite,
+            cropWidth * this.frames,
+            1,
+            cropWidth,
+            cropHeight,
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+          );
+        }
+
+        // Update the player's position and animation frame
+        update() {
+          this.frameCounter++;
+          if (this.frameCounter >= this.animationSpeed) {
+            this.frames++;
+            // If all frames of the animation more than 6, reset to the first frame
+            if (this.frames > 6) this.frames = 0;
+            this.frameCounter = 0;
+          }
+          this.position.y += this.velocity.y;
+          this.position.x += this.velocity.x;
+          this.draw();
+
+          // Limit the player position from the top of the frame
+          if (this.position.y < -180) {
+            this.position.y = -180;
+            this.velocity.y = 0; // Stop vertical velocity when reaching the top
+          }
+
+          // Limit the player position from the bottom of the frame
+          if (this.position.y + this.height + this.velocity.y <= 600)
+            this.velocity.y += gravity;
+          else this.velocity.y = 0;
+        }
+      }
+
+      // Create image. add platform image src
+      const image = new Image();
+      image.src = "img/platform.png";
+      // Create class for Platform
+      class Platform {
+        constructor() {
+          this.position = {
+            x: 800,
+            y: 530,
+            image: new Image(),
+          };
+          this.velocity = {
+            x: 0,
+            y: 0,
+          };
+          this.width = 350;
+          this.height = 90;
+          // Set image
+          this.position.image.src = "img/platform.png";
+        }
+
+        //Draw platform
+        draw() {
+          c.drawImage(
+            this.position.image,
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+          );
+          //   c.fillStyle = "blue";
+          //   c.fillRect(this.position.x, this.position.y, this.width, this.height);
+        }
+      }
+
+      // Winning senario
+      function checkWinCondition() {
+        if (player.position.x + player.width >= 1420) {
+          const winOverlay = document.getElementById("winOverlay");
+          winOverlay.style.display = "block";
+        }
+      }
+      /* ---------
+        Functions blueprints
+        --------- */
+      function animate() {
+        requestAnimationFrame(animate);
+        c.clearRect(0, 0, 1800, 600);
+        player.update();
+        platform.draw();
+        checkWinCondition();
+
+        // Moves player left/right within the frame/screen
+        if (keys.right.pressed && player.position.x < 1450) {
+          player.velocity.x = 5;
+        } else if (keys.left.pressed && player.position.x > 0) {
+          player.velocity.x = -5;
+        } else {
+          player.velocity.x = 0;
+        }
+
+        // Stops player when moving left onto the right side of platform
+        if (
+          keys.left.pressed &&
+          player.position.x + player.width >=
+            platform.position.x + platform.width &&
+          player.position.x + player.velocity.x <=
+            platform.position.x + platform.width &&
+          player.position.y + player.height >= platform.position.y &&
+          player.position.y <= platform.position.y + platform.height
+        ) {
+          player.velocity.x = 0;
+        }
+
+        // Stops player when moving right onto the left side of platform
+        if (
+          keys.right.pressed &&
+          player.position.x + player.width <= platform.position.x &&
+          player.position.x + player.width + player.velocity.x >=
+            platform.position.x &&
+          player.position.y + player.height >= platform.position.y &&
+          player.position.y <= platform.position.y + platform.height
+        ) {
+          player.velocity.x = 0;
+        }
+
+        // Stops player when on top of the platform
+        if (
+          player.position.y + player.height <= platform.position.y &&
+          player.position.y + player.height + player.velocity.y >=
+            platform.position.y &&
+          player.position.x + player.width >= platform.position.x &&
+          player.position.x <= platform.position.x + platform.width
+        ) {
+          player.velocity.y = 0;
+        }
+      }
+
+      /* ----------
+        Add event listeners
+        ----------- */
+      addEventListener("keydown", ({ keyCode }) => {
+        console.log(keyCode);
+        switch (keyCode) {
+          case 37:
+            console.log("left");
+            keys.left.pressed = true;
+            player.currentSprite = player.position.walkleftimage;
+            break;
+          case 39:
+            console.log("right");
+            keys.right.pressed = true;
+            player.currentSprite = player.position.walkimage;
+            break;
+          case 32:
+          case 38:
+            console.log("up");
+            player.velocity.y -= 5;
+            break;
+          case 40:
+            console.log("down");
+            break;
+        }
+      });
+
+      addEventListener("keyup", ({ keyCode }) => {
+        console.log(keyCode);
+        switch (keyCode) {
+          case 37:
+            console.log("left");
+            keys.left.pressed = false;
+            player.velocity.x = 0; // Set horizontal velocity to 0
+            player.currentSprite = player.position.standleftimage;
+            break;
+          case 39:
+            console.log("right");
+            keys.right.pressed = false;
+            player.velocity.x = 0; // Set horizontal velocity to 0
+            player.currentSprite = player.position.standimage;
+            break;
+          case 32:
+          case 38:
+            player.velocity.y -= 5;
+            break;
+          case 40:
+            console.log("down");
+            break;
+        }
+      });
+
+      /* ------------
+      This is where the magic happens
+        ------------- */
+
+      // Create a reference to the canvas
+      const canvas = document.getElementById("canvas");
+      const c = canvas.getContext("2d");
+
+      // Create constants for player, playform, gravity, and key
+      const player = new Player();
+      const platform = new Platform();
+      const gravity = 0.2;
+      const keys = {
+        right: {
+          pressed: false,
+        },
+        left: {
+          pressed: false,
+        },
+      };
+      player.update();
+
+      animate();
+    </script>
+  </body>
+</html>
