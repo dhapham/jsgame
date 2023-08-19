@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Assignment 3 Gametest<title>
+    <title>Assignment 3 Game</title>
   </head>
 
   <body>
@@ -15,13 +15,14 @@
 
     <!-- Include CSS -->
     <style>
-      /* Import google fonts */
       @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
       #canvas {
-        background-image: url(./img/background.png);
+        background-image: url(./images/background.png);
         background-color: rgb(188, 188, 188);
         background-size: 1500px 600px;
+        /* width: 1500px;
+        height: 600px; */
         border: 3px solid red;
       }
 
@@ -58,10 +59,10 @@
     <script>
       // Create class blueprint for Player and Platform
       const standimage = new Image();
-      standimage.src = "img/stand.png";
+      standimage.src = "images/stand.png";
 
       const walkimage = new Image();
-      walkimage.src = "img/walk.png";
+      walkimage.src = "images/walk.png";
 
       //  Create class for Player
       class Player {
@@ -83,10 +84,10 @@
           this.width = 80;
           this.height = 150;
 
-          this.position.standimage.src = "img/stand.png";
-          this.position.standleftimage.src = "img/stand-left.png";
-          this.position.walkimage.src = "img/walk.png";
-          this.position.walkleftimage.src = "img/walk-left.png";
+          this.position.standimage.src = "images/stand.png";
+          this.position.standleftimage.src = "images/stand-left.png";
+          this.position.walkimage.src = "images/walk.png";
+          this.position.walkleftimage.src = "images/walk-left.png";
           this.frames = 0;
           this.currentSprite = this.position.standimage;
 
@@ -165,7 +166,7 @@
 
       // Create image. add platform image src
       const image = new Image();
-      image.src = "img/platform.png";
+      image.src = "images/platform.png";
       // Create class for Platform
       class Platform {
         constructor() {
@@ -181,7 +182,7 @@
           this.width = 350;
           this.height = 90;
           // Set image
-          this.position.image.src = "img/platform.png";
+          this.position.image.src = "images/platform.png";
         }
 
         //Draw platform
